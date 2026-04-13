@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>India Income Tax Calculator - New Regime FY 2025-26</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    .calculator {
+      background: #fff; border-radius: 16px; padding: 40px;
+      max-width: 580px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    h1 { text-align: center; color: #1a1a2e; font-size: 1.5rem; margin-bottom: 5px; }
+    .subtitle { text-align: center; color: #888; font-size: 0.85rem; margin-bottom: 25px; }
+    .flag { text-align: center; font-size: 2rem; margin-bottom: 10px; }
+    label { display: block; font-weight: 600; color: #333; margin-bottom: 8px; }
+    .input-group {
+      display: flex; align-items: center; border: 2px solid #ddd;
+      border-radius: 10px; overflow: hidden; margin-bottom: 20px; transition: 0.3s;
+    }
+    .input-group:focus-within { border-color: #5c6bc0; }
+    .input-group span {
+      background: #f0f0f0; padding: 12px 16px; font-weight: 700; color: #555; font-size: 1.1rem;
+    }
+    .input-group input {
+      border: none; outline: none; padding: 12px 16px; font-size: 1.1rem; width: 100%;
+    }
+    button {
+      width: 100%; padding: 14px;
+      background: linear-gradient(135deg, #5c6bc0, #3949ab);
+      color: white; border: none; border-radius: 10px;
+      font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: 0.2s;
+    }
+    button:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(92,107,192,0.4); }
+
+    .results { margin-top: 25px; display: none; }
+    .results h2 {
+      color: #1a1a2e; font-size: 1.1rem; margin-bottom: 15px;
+      padding-bottom: 8px; border-bottom: 2px solid #eee;
+    }
+    .result-row {
+      display: flex; justify-content: space-between;
+      padding: 10px 0; border-bottom: 1px solid #f5f5f5; font-size: 0.95rem;
+    }
+    .result-row .label { color: #666; }
+    .result-row .value { font-weight: 600; color: #333; }
+    .result-row.total {
+      border-top: 2px solid #5c6bc0; border-bottom: none;
+      margin-top: 10px; padding-top: 15px;
+    }
+    .result-row.total .label { color: #1a1a2e; font-weight: 700; font-size: 1.05rem; }
+    .result-row.total .value { color: #e53935; font-weight: 700; font-size: 1.15rem; }
+    .result-row.highlight {
+      background: #fff3e0; margin: 4px -10px; padding: 10px;
+      border-radius: 8px; border-bottom: none;
+    }
+    .result-row.highlight .label { color: #e65100; font-weight: 600; }
+    .result-row.highlight .value { color: #e65100; font-weight: 700; }
+
+    .note {
+      padding: 12px 14px; border-radius: 8px; margin-top: 12px;
+      font-size: 0.88rem; text-align: center; font-weight: 600;
+    }
+    .note.green { background: #e8f5e9; color: #2e7d32; }
+    .note.orange { background: #fff3e0; color: #e65100; }
+
+    .effective-rate {
+      text-align: center; margin-top: 15px; padding: 10px;
+      background: #f3e5f5; border-radius: 8px;
+      font-size: 0.95rem; color: #6a1b9a; font-weight: 600;
+    }
+
+    /* ── TaxNil Savings Box ── */
+    .taxnil-box {
+      display: none;
+      margin-top: 25px;
+      background: linear-gradient(135deg, #1b5e20, #2e7d32);
+      border-radius: 14px;
+      padding: 25px;
+      text-align: center;
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+    }
+    .taxnil-box::before {
+      content: '';
+      position: absolute; top: -30px; right: -30px;
+      width: 100px; height: 100px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 50%;
+    }
+    .taxnil-box::after {
+      content: '';
+      position: absolute; bottom: -20px; left: -20px;
+      width: 80px; height: 80px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 50%;
+    }
+    .taxnil-box .taxnil-title {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+      opacity: 0.9;
+      letter-spacing: 0.5px;
+      font-style: italic;
+    }
+    .taxnil-box .taxnil-brand {
+      font-size: 1.6rem;
+      font-weight: 800;
+      margin-bottom: 15px;
+      letter-spacing: 1px;
+    }
+    .taxnil-box .taxnil-brand span {
+      color: #a5d6a7;
+    }
+    .taxnil-box .taxnil-amount {
+      font-size: 2.4rem;
+      font-weight: 800;
+      color: #69f0ae;
+      margin-bottom: 20px;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
+    .taxnil-box .taxnil-compare {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 15px;
+      margin-top: 5px;
+    }
+    .taxnil-box .compare-item {
+      text-align: center;
+    }
+    .taxnil-box .compare-label {
+      font-size: 0.7rem;
+      opacity: 0.7;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 6px;
+    }
+    .taxnil-box .compare-value {
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+    .taxnil-box .compare-value.current { color: #ffffff; }
+    .taxnil-box .compare-value.with-taxnil { color: #fdd835; }
+    .taxnil-box .compare-value.saved { color: #69f0ae; }
+    .taxnil-box .taxnil-arrow {
+      font-size: 1.2rem;
+      opacity: 0.5;
+      margin-top: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="calculator">
+    <div class="flag">🇮🇳</div>
+    <h1>Income Tax Calculator</h1>
+    <p class="subtitle">New Tax Regime — FY 2025-26 (AY 2026-27)</p>
+
+    <label for="grossIncome">Enter Your Gross Annual Income</label>
+    <div class="input-group">
+      <span>₹</span>
+      <input type="number" id="grossIncome" placeholder="e.g. 2000000" min="0">
+    </div>
+    <button onclick="calculateTax()">Calculate Tax 🧮</button>
+
+    <!-- Tax Results -->
+    <div class="results" id="results">
+      <h2>📋 Tax Computation</h2>
+      <div id="resultRows"></div>
+      <div class="effective-rate" id="effectiveRate"></div>
+      <div id="notes"></div>
+    </div>
+
+    <!-- TaxNil Savings -->
+    <div class="taxnil-box" id="taxnilBox">
+      <div class="taxnil-title">How much tax you can save with</div>
+      <div class="taxnil-brand">Tax<span>Nil</span> 💰</div>
+      <div class="taxnil-amount" id="taxnilSavings"></div>
+      <div class="taxnil-compare">
+        <div class="compare-item">
+          <div class="compare-label">Current Tax</div>
+          <div class="compare-value current" id="taxnilCurrent"></div>
+        </div>
+        <div class="taxnil-arrow">→</div>
+        <div class="compare-item">
+          <div class="compare-label">With TaxNil</div>
+          <div class="compare-value with-taxnil" id="taxnilReduced"></div>
+        </div>
+        <div class="taxnil-arrow">→</div>
+        <div class="compare-item">
+          <div class="compare-label">You Save</div>
+          <div class="compare-value saved" id="taxnilSaved"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function fmt(n) {
+      return '₹' + Math.round(n).toLocaleString('en-IN');
+    }
+
+    function computeTax(grossIncome) {
+      const stdDed = Math.min(75000, grossIncome);
+      const taxable = Math.max(0, grossIncome - stdDed);
+
+      const slabs = [
+        { min: 0,       max: 400000,   rate: 0 },
+        { min: 400000,  max: 800000,   rate: 0.05 },
+        { min: 800000,  max: 1200000,  rate: 0.10 },
+        { min: 1200000, max: 1600000,  rate: 0.15 },
+        { min: 1600000, max: 2000000,  rate: 0.20 },
+        { min: 2000000, max: 2400000,  rate: 0.25 },
+        { min: 2400000, max: Infinity,  rate: 0.30 }
+      ];
+
+      let taxBeforeRebate = 0;
+      for (const s of slabs) {
+        if (taxable > s.min) {
+          taxBeforeRebate += (Math.min(taxable, s.max) - s.min) * s.rate;
+        }
+      }
+
+      let rebate = 0;
+      if (taxable <= 1200000) rebate = Math.min(taxBeforeRebate, 60000);
+
+      let taxAfterRebate = Math.max(0, taxBeforeRebate - rebate);
+
+      let marginalRelief = 0;
+      if (taxable > 1200000) {
+        const excess = taxable - 1200000;
+        if (taxAfterRebate > excess) {
+          marginalRelief = taxAfterRebate - excess;
+          taxAfterRebate = excess;
+        }
+      }
+
+      let surchargeRate = 0;
+      if (taxable > 20000000) surchargeRate = 0.25;
+      else if (taxable > 10000000) surchargeRate = 0.15;
+      else if (taxable > 5000000) surchargeRate = 0.10;
+      const surcharge = Math.round(taxAfterRebate * surchargeRate);
+
+      const cess = Math.round((taxAfterRebate + surcharge) * 0.04);
+      const totalTax = Math.round(taxAfterRebate + surcharge + cess);
+
+      return {
+        grossIncome, stdDed, taxable, taxBeforeRebate,
+        rebate, taxAfterRebate, marginalRelief,
+        marginalReliefApplied: marginalRelief > 0,
+        surchargeRate, surcharge, cess, totalTax
+      };
+    }
+
+    function calculateTax() {
+      const gross = parseFloat(document.getElementById('grossIncome').value);
+      if (isNaN(gross) || gross < 0) {
+        alert('Please enter a valid income.');
+        return;
+      }
+
+      const actual = computeTax(gross);
+      const reduced = computeTax(gross * 0.5);
+      const savings = actual.totalTax - reduced.totalTax;
+
+      // ── Build Result Rows ──
+      let rows = '';
+      const addRow = (label, value, cls = '') =>
+        rows += `<div class="result-row ${cls}">
+          <span class="label">${label}</span>
+          <span class="value">${value}</span>
+        </div>`;
+
+      addRow('Gross Income', fmt(actual.grossIncome));
+      addRow('Standard Deduction', '− ' + fmt(actual.stdDed));
+      addRow('Taxable Income', fmt(actual.taxable));
+      addRow('Tax on Slabs', fmt(actual.taxBeforeRebate));
+
+      if (actual.rebate > 0) {
+        addRow('Rebate u/s 87A', '− ' + fmt(actual.rebate));
+      } else if (actual.taxable > 1200000) {
+        addRow('Rebate u/s 87A', '₹0 (income > ₹12L)');
+      }
+
+      addRow('Tax After Rebate', fmt(actual.taxBeforeRebate - actual.rebate));
+
+      if (actual.marginalReliefApplied) {
+        addRow('⚡ Marginal Relief', '− ' + fmt(actual.marginalRelief), 'highlight');
+        addRow('Tax After Marginal Relief', fmt(actual.taxAfterRebate));
+      }
+
+      if (actual.surchargeRate > 0) {
+        addRow(`Surcharge (${actual.surchargeRate * 100}%)`, fmt(actual.surcharge));
+      }
+
+      addRow('Health & Education Cess (4%)', fmt(actual.cess));
+      addRow('💰 Total Tax Payable', fmt(actual.totalTax), 'total');
+
+      document.getElementById('resultRows').innerHTML = rows;
+      document.getElementById('results').style.display = 'block';
+
+      const effRate = gross > 0 ? ((actual.totalTax / gross) * 100).toFixed(2) : '0.00';
+      document.getElementById('effectiveRate').textContent =
+        `📈 Effective Rate: ${effRate}% | Monthly Tax: ${fmt(actual.totalTax / 12)}`;
+
+      let notes = '';
+      if (actual.rebate > 0 && actual.taxAfterRebate === 0) {
+        notes += `<div class="note green">🎉 Full rebate u/s 87A applied — ZERO TAX!</div>`;
+      }
+      if (actual.marginalReliefApplied) {
+        notes += `<div class="note orange">⚡ Marginal Relief saved you ${fmt(actual.marginalRelief)}!</div>`;
+      }
+      document.getElementById('notes').innerHTML = notes;
+
+      // ── TaxNil Box ──
+      const taxnilBox = document.getElementById('taxnilBox');
+      if (savings > 0) {
+        taxnilBox.style.display = 'block';
+        document.getElementById('taxnilSavings').textContent = fmt(savings);
+        document.getElementById('taxnilCurrent').textContent = fmt(actual.totalTax);
+        document.getElementById('taxnilReduced').textContent = fmt(reduced.totalTax);
+        document.getElementById('taxnilSaved').textContent = fmt(savings);
+      } else {
+        taxnilBox.style.display = 'none';
+      }
+    }
+
+    document.getElementById('grossIncome').addEventListener('keypress', e => {
+      if (e.key === 'Enter') calculateTax();
+    });
+  </script>
+</body>
+</html>
